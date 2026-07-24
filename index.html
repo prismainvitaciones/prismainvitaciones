@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prisma Invitaciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --negro: #000000;
+    --rosa: #F472B6;
+    --fucsia: #EC4899;
+    --teal: #2D9B83;
+    --blanco: #FFFFFF;
+    --gris: #1a1a1a;
+    --gris2: #2a2a2a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--negro); color: var(--blanco); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+
+  /* Textura de grano sutil sobre toda la página */
+  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 200; opacity: .04; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  /* Acento de marca: haz de luz tipo prisma */
+  .prism-wrap { margin: 0 auto 18px; }
+  .prism-beam { width: 2px; height: 46px; margin: 0 auto; background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0)); }
+  .prism-fan { display: flex; justify-content: center; gap: 3px; margin-top: -2px; }
+  .prism-ray { width: 3px; height: 30px; border-radius: 2px; opacity: .8; }
+  .prism-ray:nth-child(1) { background: var(--teal); transform: rotate(-14deg); transform-origin: top; }
+  .prism-ray:nth-child(2) { background: var(--rosa); transform: rotate(-5deg); transform-origin: top; }
+  .prism-ray:nth-child(3) { background: var(--fucsia); transform: rotate(4deg); transform-origin: top; height: 34px; }
+  .prism-ray:nth-child(4) { background: var(--rosa); transform: rotate(13deg); transform-origin: top; }
+  .prism-ray:nth-child(5) { background: var(--teal); transform: rotate(20deg); transform-origin: top; }
+
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    padding: 18px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-logo { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.3rem; letter-spacing: 2px; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; transition: color .3s; }
+  .nav-links a:hover { color: var(--rosa); }
+
+  #hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 120px 20px 60px; position: relative; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 20% 50%, rgba(45,155,131,0.18) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 40%, rgba(244,114,182,0.18) 0%, transparent 70%); }
+  .shape { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12; pointer-events: none; }
+  .shape-1 { width: 400px; height: 400px; background: var(--rosa); top: -100px; right: -100px; }
+  .shape-2 { width: 300px; height: 300px; background: var(--teal); bottom: -50px; left: -80px; }
+  .hero-tag { font-size: 0.75rem; letter-spacing: 4px; text-transform: uppercase; color: var(--teal); margin-bottom: 20px; animation: fadeUp .8s ease both; }
+  .hero-title { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: clamp(3rem, 10vw, 7rem); line-height: 1; letter-spacing: -2px; animation: fadeUp .8s .15s ease both; }
+  .hero-sub { font-size: clamp(0.9rem, 2vw, 1.1rem); color: rgba(255,255,255,0.55); margin-top: 16px; letter-spacing: 4px; text-transform: uppercase; animation: fadeUp .8s .3s ease both; }
+  .hero-desc { max-width: 480px; margin: 28px auto 0; font-size: 1rem; color: rgba(255,255,255,0.65); line-height: 1.7; animation: fadeUp .8s .45s ease both; }
+  .hero-btns { margin-top: 44px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; animation: fadeUp .8s .6s ease both; }
+  .btn-primary { padding: 14px 36px; border-radius: 50px; background: linear-gradient(135deg, var(--fucsia), var(--rosa)); color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9rem; text-decoration: none; border: none; cursor: pointer; transition: transform .2s, box-shadow .2s; box-shadow: 0 8px 30px rgba(236,72,153,0.35); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(236,72,153,0.5); }
+  .btn-secondary { padding: 14px 36px; border-radius: 50px; background: transparent; color: var(--teal); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9rem; text-decoration: none; border: 2px solid var(--teal); cursor: pointer; transition: all .2s; }
+  .btn-secondary:hover { background: var(--teal); color: #fff; }
+
+  section { padding: 100px 40px; }
+  .section-label { font-size: 0.7rem; letter-spacing: 5px; text-transform: uppercase; color: var(--teal); margin-bottom: 12px; }
+  .section-title { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1; }
+  .section-title span { color: var(--rosa); }
+  .section-sub { color: rgba(255,255,255,0.5); margin-top: 12px; max-width: 520px; font-size: 0.95rem; line-height: 1.7; }
+  .section-header { margin-bottom: 60px; }
+
+  #catalogo { background: var(--gris); }
+
+  .catalogo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; max-width: 900px; margin: 0 auto; }
+  .card { background: var(--negro); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; overflow: hidden; transition: transform .3s, box-shadow .3s; position: relative; }
+  .card::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 20px; padding: 1px;
+    background: linear-gradient(135deg, var(--fucsia), transparent 45%, var(--teal));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0; transition: opacity .35s ease; pointer-events: none;
+  }
+  .card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(244,114,182,0.15); }
+  .card:hover::before { opacity: 1; }
+  .card-badge { position: absolute; top: 16px; right: 16px; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; z-index: 2; }
+  .badge-popular { background: var(--fucsia); color: #fff; }
+  .badge-premium { background: var(--teal); color: #fff; }
+
+  /* Visual abstracto en lugar de icono/emoji */
+  .card-visual { height: 170px; position: relative; overflow: hidden; background: linear-gradient(160deg, #0a0a0a, #161616); }
+  .cv-glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; filter: blur(55px); opacity: .55; }
+  .cv-video .cv-glow.g1 { background: var(--teal); top: -60px; left: -50px; }
+  .cv-video .cv-glow.g2 { background: var(--rosa); bottom: -70px; right: -30px; opacity: .35; }
+  .cv-digital .cv-glow.g1 { background: var(--fucsia); top: -60px; right: -50px; }
+  .cv-digital .cv-glow.g2 { background: var(--teal); bottom: -70px; left: -30px; opacity: .35; }
+  .cv-mark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .cv-mark svg { width: 62px; height: 62px; }
+  .cv-dot { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.55); }
+
+  .card-body { padding: 24px; position: relative; z-index: 2; }
+  .card-num { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 6px; }
+  .card-name { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.2rem; margin-bottom: 8px; }
+  .card-desc { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 20px; }
+  .card-features { list-style: none; margin-bottom: 24px; }
+  .card-features li { font-size: 0.82rem; color: rgba(255,255,255,0.65); padding: 5px 0; display: flex; align-items: center; gap: 8px; }
+  .card-features li::before { content: '✦'; color: var(--teal); font-size: 0.6rem; }
+  .price-amount { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2rem; color: var(--rosa); }
+  .price-currency { font-size: 0.9rem; color: rgba(255,255,255,0.4); }
+  .card-cta { margin-top: 20px; width: 100%; padding: 12px; border-radius: 12px; background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.3); color: var(--rosa); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all .2s; text-decoration: none; display: block; text-align: center; }
+  .card-cta:hover { background: var(--fucsia); border-color: var(--fucsia); color: #fff; }
+
+  .muestras-section { margin-top: 90px; }
+  .muestra-tag { display: inline-block; padding: 4px 14px; border-radius: 50px; font-size: 0.68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .tag-xv { background: rgba(244,114,182,0.15); color: var(--rosa); border: 1px solid rgba(244,114,182,0.35); }
+  .tag-boda { background: rgba(236,72,153,0.15); color: var(--fucsia); border: 1px solid rgba(236,72,153,0.35); }
+  .tag-bautizo { background: rgba(45,155,131,0.15); color: var(--teal); border: 1px solid rgba(45,155,131,0.35); }
+  .tag-3anios { background: rgba(232,199,126,0.15); color: #E8C77E; border: 1px solid rgba(232,199,126,0.35); }
+  .tag-otros { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.25); }
+
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1100px; margin: 0 auto; }
+  .portfolio-card { border-radius: 20px; overflow: hidden; background: var(--gris); border: 1px solid rgba(255,255,255,0.07); transition: transform .3s, box-shadow .3s; position: relative; }
+  .portfolio-card::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 20px; padding: 1px;
+    background: linear-gradient(135deg, var(--teal), transparent 45%, var(--rosa));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 3;
+  }
+  .portfolio-card:hover { transform: translateY(-6px); box-shadow: 0 16px 50px rgba(45,155,131,0.15); }
+  .portfolio-card:hover::before { opacity: 1; }
+  .port-media { position: relative; width: 100%; height: 220px; overflow: hidden; background: #111; }
+  .port-media iframe { width: 200%; height: 440px; border: none; transform: scale(0.5); transform-origin: top left; pointer-events: none; display: block; }
+  .port-iframe-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; }
+  .overlay-btn { padding: 10px 24px; border-radius: 50px; background: var(--fucsia); color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.8rem; text-decoration: none; transition: transform .2s; }
+  .overlay-btn:hover { transform: scale(1.05); }
+  .portfolio-info { padding: 20px; }
+  .portfolio-type { font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+  .portfolio-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1rem; }
+
+  #proceso { background: var(--gris); }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; margin-top: 60px; max-width: 1000px; margin-left: auto; margin-right: auto; }
+  .step { text-align: center; padding: 32px 20px; background: var(--negro); border-radius: 20px; border: 1px solid rgba(255,255,255,0.06); transition: border-color .3s; }
+  .step:hover { border-color: var(--teal); }
+  .step-num { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), #1a6b5a); display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.1rem; margin: 0 auto 16px; }
+  .step-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
+  .step-desc { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  #contacto { background: var(--negro); text-align: center; }
+  .contacto-inner { max-width: 600px; margin: 0 auto; }
+  .contacto-options { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 40px; }
+  .contact-btn { display: flex; align-items: center; gap: 10px; padding: 14px 28px; border-radius: 50px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: all .2s; border: 2px solid; }
+  .contact-btn.whatsapp { background: #25D366; border-color: #25D366; color: #fff; }
+  .contact-btn.whatsapp:hover { background: #1da851; border-color: #1da851; }
+  .contact-btn.email { background: transparent; border-color: var(--rosa); color: var(--rosa); }
+  .contact-btn.email:hover { background: var(--rosa); color: #fff; }
+
+  #redes { background: var(--gris); text-align: center; }
+  .redes-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 40px; }
+  .red-card { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 36px; border-radius: 20px; background: var(--negro); border: 1px solid rgba(255,255,255,0.07); text-decoration: none; color: var(--blanco); transition: all .3s; min-width: 130px; }
+  .red-card:hover { transform: translateY(-6px); }
+  .red-card.fb:hover { border-color: #1877F2; box-shadow: 0 12px 40px rgba(24,119,242,0.2); }
+  .red-card.ig:hover { border-color: #E1306C; box-shadow: 0 12px 40px rgba(225,48,108,0.2); }
+  .red-card.tt:hover { border-color: #69C9D0; box-shadow: 0 12px 40px rgba(105,201,208,0.2); }
+  .red-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+  .red-handle { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+
+  footer { background: #000; padding: 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); }
+  .footer-logo { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 8px; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    section { padding: 70px 20px; }
+    .hero-btns { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav>
+  <div class="nav-logo"><span style="color:var(--rosa)">P</span>RIS<span style="color:var(--teal)">M</span><span style="color:var(--fucsia)">A</span></div>
+  <ul class="nav-links">
+    <li><a href="#catalogo">Catálogo</a></li>
+    <li><a href="#proceso">¿Cómo funciona?</a></li>
+    <li><a href="#redes">Redes</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <p class="hero-tag">✦ Invitaciones digitales únicas ✦</p>
+  <div class="prism-wrap"><div class="prism-beam"></div><div class="prism-fan"><div class="prism-ray"></div><div class="prism-ray"></div><div class="prism-ray"></div><div class="prism-ray"></div><div class="prism-ray"></div></div></div>
+  <h1 class="hero-title"><span style="color:var(--rosa)">P</span>RIS<span style="color:var(--teal)">M</span><span style="color:var(--fucsia)">A</span></h1>
+  <p class="hero-sub">Invitaciones</p>
+  <p class="hero-desc">Diseñamos la invitación perfecta para tu evento especial. Desde flyers hasta páginas web completas — todo digital, todo memorable.</p>
+  <div class="hero-btns">
+    <a href="#catalogo" class="btn-primary">Ver catálogo</a>
+    <a href="https://wa.me/525548077879?text=Hola!%20Me%20interesa%20una%20invitación%20de%20Prisma%20Invitaciones%20🎉" target="_blank" class="btn-secondary">Cotizar ahora</a>
+  </div>
+</section>
+
+<!-- CATÁLOGO -->
+<section id="catalogo">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="section-header reveal">
+      <p class="section-label">Lo que ofrecemos</p>
+      <h2 class="section-title">Nuestro <span>catálogo</span></h2>
+      <p class="section-sub">Dos formas de contar tu historia. Para XV años, bodas, bautizos, presentaciones de 3 años y cualquier celebración especial.</p>
+    </div>
+
+    <div class="catalogo-grid">
+      <div class="card reveal">
+        <div class="card-badge badge-popular">Popular</div>
+        <div class="card-visual cv-video">
+          <div class="cv-glow g1"></div><div class="cv-glow g2"></div>
+          <div class="cv-dot" style="width:5px;height:5px;top:22%;left:18%;"></div>
+          <div class="cv-dot" style="width:3px;height:3px;top:70%;left:75%;"></div>
+          <div class="cv-dot" style="width:4px;height:4px;top:38%;left:82%;"></div>
+          <div class="cv-mark">
+            <svg viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="27" stroke="url(#gradVideo)" stroke-width="1.6" opacity="0.55"/>
+              <path d="M26 22 L44 32 L26 42 Z" fill="url(#gradVideo)"/>
+              <defs><linearGradient id="gradVideo" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#2D9B83"/><stop offset="1" stop-color="#F472B6"/></linearGradient></defs>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="card-num">Paquete 01</p>
+          <h3 class="card-name">Video Invitación</h3>
+          <p class="card-desc">Video animado de 30 a 40 segundos hecho en CapCut, ideal para compartir en todos lados.</p>
+          <ul class="card-features">
+            <li>Video de 30–40 segundos</li>
+            <li>Animaciones y música incluidas</li>
+            <li>Formato MP4 para WhatsApp y redes</li>
+            <li>2 revisiones incluidas</li>
+          </ul>
+          <div style="display:flex;align-items:baseline;gap:6px"><span class="price-amount">$300</span><span class="price-currency">MXN</span></div>
+          <a href="https://wa.me/525548077879?text=Hola!%20Me%20interesa%20el%20Video%20Invitación%20%24300" target="_blank" class="card-cta">Pedir este paquete</a>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-visual cv-digital">
+          <div class="cv-glow g1"></div><div class="cv-glow g2"></div>
+          <div class="cv-dot" style="width:4px;height:4px;top:20%;left:78%;"></div>
+          <div class="cv-dot" style="width:3px;height:3px;top:68%;left:22%;"></div>
+          <div class="cv-dot" style="width:5px;height:5px;top:35%;left:14%;"></div>
+          <div class="cv-mark">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M32 8 L52 24 L44 56 L20 56 L12 24 Z" stroke="url(#gradDigital)" stroke-width="1.6" opacity="0.55"/>
+              <path d="M32 18 L44 27 L39 46 L25 46 L20 27 Z" fill="url(#gradDigital)"/>
+              <defs><linearGradient id="gradDigital" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#EC4899"/><stop offset="1" stop-color="#2D9B83"/></linearGradient></defs>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="card-num">Paquete 02</p>
+          <h3 class="card-name">Invitación Digital</h3>
+          <p class="card-desc">Invitación interactiva tipo página web diseñada en Canva. Se abre con un link desde cualquier celular.</p>
+          <ul class="card-features">
+            <li>Link único para compartir</li>
+            <li>Diseño tipo página web</li>
+            <li>Galería de fotos incluida</li>
+            <li>2 revisiones incluidas</li>
+          </ul>
+          <div style="display:flex;align-items:baseline;gap:6px"><span class="price-amount">$350</span><span class="price-currency">MXN</span></div>
+          <a href="https://wa.me/525548077879?text=Hola!%20Me%20interesa%20la%20Invitación%20Digital%20%24350" target="_blank" class="card-cta">Pedir este paquete</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="muestras-section reveal">
+      <div class="section-header reveal">
+        <p class="section-label">Trabajos reales</p>
+        <h2 class="section-title">Nuestras <span>muestras</span></h2>
+        <p class="section-sub">Así se ven nuestras invitaciones digitales una vez entregadas.</p>
+      </div>
+      <div class="portfolio-grid">
+        <div class="portfolio-card reveal">
+          <div class="port-media">
+            <iframe src="https://valentina-xv.pages.dev/" scrolling="no"></iframe>
+            <div class="port-iframe-overlay"><a href="https://valentina-xv.pages.dev/" target="_blank" class="overlay-btn">Ver invitación</a></div>
+          </div>
+          <div class="portfolio-info"><span class="muestra-tag tag-xv">XV Años</span><h4 class="portfolio-name">Jardín Encantado · Valentina</h4></div>
+        </div>
+        <div class="portfolio-card reveal">
+          <div class="port-media">
+            <iframe src="https://invitacioncamilasofia.pages.dev/" scrolling="no"></iframe>
+            <div class="port-iframe-overlay"><a href="https://invitacioncamilasofia.pages.dev/" target="_blank" class="overlay-btn">Ver invitación</a></div>
+          </div>
+          <div class="portfolio-info"><span class="muestra-tag tag-xv">XV Años</span><h4 class="portfolio-name">Disco Fever · Camila Sofía</h4></div>
+        </div>
+        <div class="portfolio-card reveal">
+          <div class="port-media">
+            <iframe src="https://boda-valeria-sebastian.prismainvitaciones.workers.dev/" scrolling="no"></iframe>
+            <div class="port-iframe-overlay"><a href="https://boda-valeria-sebastian.prismainvitaciones.workers.dev/" target="_blank" class="overlay-btn">Ver invitación</a></div>
+          </div>
+          <div class="portfolio-info"><span class="muestra-tag tag-boda">Boda</span><h4 class="portfolio-name">Valeria &amp; Sebastián</h4></div>
+        </div>
+        <div class="portfolio-card reveal">
+          <div class="port-media">
+            <iframe src="https://mateobautizo.prismainvitaciones.workers.dev/" scrolling="no"></iframe>
+            <div class="port-iframe-overlay"><a href="https://mateobautizo.prismainvitaciones.workers.dev/" target="_blank" class="overlay-btn">Ver invitación</a></div>
+          </div>
+          <div class="portfolio-info"><span class="muestra-tag tag-bautizo">Bautizo</span><h4 class="portfolio-name">Mi Bautizo · Mateo</h4></div>
+        </div>
+        <div class="portfolio-card reveal">
+          <div class="port-media">
+            <iframe src="https://invitacionreginakids.prismainvitaciones.workers.dev/" scrolling="no"></iframe>
+            <div class="port-iframe-overlay"><a href="https://invitacionreginakids.prismainvitaciones.workers.dev/" target="_blank" class="overlay-btn">Ver invitación</a></div>
+          </div>
+          <div class="portfolio-info"><span class="muestra-tag tag-3anios">3 Años</span><h4 class="portfolio-name">Alianza Neón · Regina</h4></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section id="proceso">
+  <div style="max-width:1000px;margin:0 auto;text-align:center;">
+    <div class="section-header reveal">
+      <p class="section-label">Así de fácil</p>
+      <h2 class="section-title">¿Cómo <span>funciona?</span></h2>
+      <p class="section-sub" style="margin:12px auto 0;">De tu idea a la invitación lista en pocos pasos.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="step-num">1</div><h4 class="step-title">Contáctanos</h4><p class="step-desc">Escríbenos por WhatsApp o redes sociales y cuéntanos sobre tu evento.</p></div>
+      <div class="step reveal"><div class="step-num">2</div><h4 class="step-title">Elige tu paquete</h4><p class="step-desc">Te asesoramos para elegir el paquete ideal según tu evento y presupuesto.</p></div>
+      <div class="step reveal"><div class="step-num">3</div><h4 class="step-title">Paga el 50%</h4><p class="step-desc">Realizas el primer pago para comenzar con el diseño de tu invitación.</p></div>
+      <div class="step reveal"><div class="step-num">4</div><h4 class="step-title">Preview y ajustes</h4><p class="step-desc">Te mostramos un preview para tu aprobación. Hacemos los cambios que necesites.</p></div>
+      <div class="step reveal"><div class="step-num">5</div><h4 class="step-title">Paga y recibe</h4><p class="step-desc">Liquidas el 50% restante y recibes tu invitación lista para compartir. ✅</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- REDES -->
+<section id="redes">
+  <div class="section-header reveal" style="text-align:center;">
+    <p class="section-label">Síguenos</p>
+    <h2 class="section-title">Nuestras <span>redes</span></h2>
+    <p class="section-sub" style="margin:12px auto 0;">Mira más ejemplos y mantente al día con novedades.</p>
+  </div>
+  <div class="redes-grid reveal">
+    <a href="https://www.facebook.com/share/1LJ8AyiNcS/" target="_blank" class="red-card fb">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      <span class="red-name">Facebook</span><span class="red-handle">Prisma Invitaciones</span>
+    </a>
+    <a href="https://www.instagram.com/prisma.invitaciones?igsh=MXBnNnVtNTM0OXMxbQ==" target="_blank" class="red-card ig">
+      <svg width="36" height="36" viewBox="0 0 24 24"><defs><linearGradient id="ig" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f09433"/><stop offset="50%" style="stop-color:#dc2743"/><stop offset="100%" style="stop-color:#bc1888"/></linearGradient></defs><path fill="url(#ig)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      <span class="red-name">Instagram</span><span class="red-handle">@prisma.invitaciones</span>
+    </a>
+    <a href="https://www.tiktok.com/@prisma.invitacion?_r=1&_t=ZS-95tuzUVosxI" target="_blank" class="red-card tt">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+      <span class="red-name">TikTok</span><span class="red-handle">@prisma.invitacion</span>
+    </a>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto">
+  <div class="contacto-inner">
+    <div class="reveal">
+      <p class="section-label">Hablemos</p>
+      <h2 class="section-title">¿Lista para tu <span>invitación?</span></h2>
+      <p class="section-sub" style="margin:12px auto 0;">Escríbenos y con gusto te asesoramos sin compromiso.</p>
+    </div>
+    <div class="contacto-options reveal">
+      <a href="https://wa.me/525548077879?text=Hola!%20Me%20interesa%20una%20invitación%20de%20Prisma%20Invitaciones%20🎉" target="_blank" class="contact-btn whatsapp">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.554 4.103 1.522 5.828L.057 23.07a.75.75 0 00.918.908l5.347-1.44A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.724 9.724 0 01-4.952-1.355l-.355-.212-3.683.991.998-3.596-.232-.369A9.718 9.718 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+        WhatsApp
+      </a>
+      <a href="mailto:prismainvitaciones@gmail.com" class="contact-btn email">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Correo
+      </a>
+    </div>
+    <p style="margin-top:24px;font-size:0.85rem;color:rgba(255,255,255,0.35);">prismainvitaciones@gmail.com</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo"><span style="color:var(--rosa)">P</span>RIS<span style="color:var(--teal)">M</span><span style="color:var(--fucsia)">A</span> INVITACIONES</div>
+  <p style="font-size:0.8rem;color:rgba(255,255,255,0.3);">© 2025 Prisma Invitaciones · Todos los derechos reservados</p>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
+</body>
+</html>
